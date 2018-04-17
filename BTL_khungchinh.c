@@ -5,15 +5,14 @@
 #include<conio.h>
 
 #define YEAR 2018
-#define MAX_NAME 40
+#define MAX_NAME 30
 #define MAX_DPMENT 30
 #define MAX_DUTY 30
 #define MAX_BIRTH 30
 #define MAX_ADD 100
 #define MAX_ELV 15
-#define MAX_PHONE 11
+#define MAX_PHONE 25
 #define MAX_MAIL 32
-#define MAX_STAFF 1000
 
 /**********************************************************************************************************************
  *                                  This program is used to manage a company's staff                                  *
@@ -40,7 +39,6 @@ typedef struct stData
 struct stData  *first = NULL, *last = NULL, *temp;
 
 int gNumOfStaff = 0;
-void dataEntry(STAFF* pStaff, int amount);
 void instruction(void);
 int checkChr(char str[]);
 int checkPhoneNumb(char str[]);
@@ -48,15 +46,23 @@ int checkDate(char str[]);
 int checkMail(char str[]);
 int checkDegree(char str[], char str2[]);
 int checkToFind(char str[], char str2[]);
-int findSomeone();
-int findStaff(STAFF* pStaff, int n);
-int changeInformation(STAFF* pStaff, int n);
+void mainMenu();
+void insertRecord();
 void deleteRecord();
 void showAllList();
-void mainMenu();
+void findOptions();
+void idFind();
+void nameFind();
+void dpmtFind();
+void timeFind();
+void dataUpdate();
+void depUpdate();
+void dutyUpdate();
+void addUpdate();
+void salUpdate();
+void allPayment();
 int main()
 {
-    STAFF* pStaff;
     char cpny[100];
     printf("Type your company's name: ");
     fflush(stdin);
@@ -80,14 +86,14 @@ void instruction(void)
     printf("\n\t-English degree");
     printf("\n\t-Salary");
     printf("\n\nPlease type data in that order and base on these notice below:");
-    printf("\nID is an integer number which is bigger than, smaller than 32000 and it isn't a coincidence to any other's one");
+    printf("\nID is an integer number which belongs to [1, 32000] and it isn't a coincidence to any other's one");
     printf("\nIn the fields: Name, Department, Duty");
     printf("\nThey are all strings of Latin letters and space, not contains numbers or special characters");
     printf("\nDepartment: Name of the Department which the staff is in");
     printf("\nDuty: The position of that staff in the Department");
     printf("\nSex: 1 equal to Male, 0 equal to Female");
     printf("\nDate of birth: dd/mm/yyyy. Eg: 26/04/1999, 04/12/1998, 22/07/1999");
-    printf("\nAddress: Not exceed more than 200 characters");
+    printf("\nAddress: Not exceed more than 100 characters");
     printf("\nPhone number: exceed 10 or 11 numbers, begin with 0. Eg: 01678216705, 096061596");
     printf("\nEmail: Accept Gmail, Yahoo and Hotmail, max and min value of the length are 32 and 16");
     printf("\nEnglish degree: Accept Vstep, Ielts, Toeic and Toefl. eg Toeic 450, Ielts 6.5");
@@ -232,7 +238,7 @@ int checkToFind(char str[], char str2[])
 void showAllList()
 {
     struct stData* p;
-    int i = 1, back;
+    int i = 1, view;
     system("cls");
     p = first;
     if(gNumOfStaff == 0)
@@ -272,16 +278,64 @@ void showAllList()
         }
     };
     printf("Type 1 if you want to show menu: ");
-    scanf("%d", &back);
-    if(back == 1)
+    scanf("%d", &view);
+    if(view == 1)
     {
         mainMenu();
+    }
+    
+}
+
+void showToDel(int choice)
+{
+    struct stData* p;
+    int i = 1, back;
+    if(choice == 1)
+    {
+        system("cls");
+        p = first;
+        if(gNumOfStaff == 0)
+        {
+            printf("\nThere hasn't any record typed. You have to insert some record into the list.");
+            getch();
+            mainMenu();
+        }
+        else
+        {
+            while(p != NULL)
+            {
+                printf("\nStaff %d:", i);
+                printf("\nID: %d", p->ID);
+                printf("\nName: %s", p->name);
+                printf("\nSex: ");
+                if(p->sex == 1)
+                {
+                    printf("Male");
+                }
+                else
+                {
+                    printf("Female");
+                }
+                printf("\nDepartment: %s", p->dpment);
+                printf("\nDuty: %s", p->duty);
+                printf("\nDate of birth: %s", p->birth);
+                printf("\nAddress: %s", p->add);
+                printf("\nPhone number: %s", p->phNum);
+                printf("\nEnglish level: %s", p->elv);
+                printf("\nEmail: %s", p->mail);
+                printf("\nStart working time: %d", p->stTime);
+                printf("\nSalary: %d USD", p->sal);
+                printf("\n\n");
+                i++;
+                p = p->pNext;
+            }
+        }
     }
 }
 
 
 /*Insert a record at the terminal*/
-void insertRecord(struct stData* temp)
+void insertRecord()
 {
     int j, choice = 0, findOut = 1;
     char deg1[] = "Ielts", deg2[] = "Toeic", deg3[] = "Toefl", deg4[] = "Vstep";
@@ -293,31 +347,34 @@ void insertRecord(struct stData* temp)
         printf("\nType staff[%d]'s information:\n", gNumOfStaff);
         printf("\nID: ");
         scanf("%d", &temp->ID);
-        /*Check the existence of the ID
-        do
+        /*This part is used to check pre-existence of the typed ID. It hasn't worked*/
+        /*
+        if(gNumOfStaff > 1)
         {
-            for(j = 0; j < gNumOfStaff - 1; j++)
+            while(curNode != NULL && curNode->ID != temp->ID)
             {
-                if(temp->ID == pStaff[j]->ID)
+                prevNode = curNode;
+                curNode = curNode->pNext;
+            }
+            if(curNode->ID == temp->ID)
+            {
+                do
                 {
-                    printf("\nThis ID is used for another staff\n");
-                    printf("Type again: ");
-                    printf("\nStaff[%d]'s information:", gNumOfStaff);
+                    system("cls");
+                    printf("This ID is used for Another! Please type other ID");
                     printf("\nID: ");
                     scanf("%d", &temp->ID);
-                    findOut = 0;
-                    break;  
                 }
+                while(curNode->ID != temp->ID);
             }
         }
-        while(findOut == 0);
         */
         printf("Name: ");
         fflush(stdin);
         gets(temp->name);
         while(!checkChr(temp->name))
         {
-            printf("Invalid Name, type 1 to view instruction or type 0 to type again!");
+            printf("Invalid Name, type 1 to view instruction or type 0 to type again!\nYour choice is: ");
             scanf("%d", &choice);
             if(choice == 1)
             {
@@ -341,7 +398,7 @@ void insertRecord(struct stData* temp)
         scanf("%d", &temp->sex);
         while(temp->sex != 0 && temp->sex != 1)
         {
-            printf("Invalid Sex, type 1 to view instruction or type 0 to type again!");
+            printf("Invalid Sex, type 1 to view instruction or type 0 to type again!\nYour choice is: ");
             scanf("%d", &choice);
             if(choice == 1)
             {
@@ -364,7 +421,7 @@ void insertRecord(struct stData* temp)
         gets(temp->dpment);
         while(!checkChr(temp->dpment))
         {
-            printf("Invalid Department, type 1 to view instruction or type 0 to type again!");
+            printf("Invalid Department, type 1 to view instruction or type 0 to type again!\nYour choice is: ");
             scanf("%d", &choice);
             if(choice == 1)
             {
@@ -389,7 +446,7 @@ void insertRecord(struct stData* temp)
         gets(temp->duty);
         while(!checkChr(temp->duty))
         {
-            printf("Invalid Duty, type 1 to view instruction or type 0 to type again!");
+            printf("Invalid Duty, type 1 to view instruction or type 0 to type again!\nYour choice is: ");
             scanf("%d", &choice);
             if(choice == 1)
             {
@@ -414,7 +471,7 @@ void insertRecord(struct stData* temp)
         gets(temp->birth);
         while(!checkDate(temp->birth))
         {
-            printf("Invalid Birthday, type 1 to view instruction or type 0 to type again!");
+            printf("Invalid Birthday, type 1 to view instruction or type 0 to type again!\nYour choice is: ");
             scanf("%d", &choice);
             if(choice == 1)
             {
@@ -442,7 +499,7 @@ void insertRecord(struct stData* temp)
         gets(temp->phNum);
         while(!checkPhoneNumb(temp->phNum))
         {
-            printf("Invalid Phone Number, type 1 to view instruction or type 0 to type again!");
+            printf("Invalid Phone Number, type 1 to view instruction or type 0 to type again!\nYour choice is: ");
             scanf("%d", &choice);
             if(choice == 1)
             {
@@ -467,7 +524,7 @@ void insertRecord(struct stData* temp)
         gets(temp->mail);
         while(!checkMail(temp->mail))
         {
-            printf("Invalid name, type 1 to view instruction or type 0 to type again!");
+            printf("Invalid name, type 1 to view instruction or type 0 to type again!\nYour choice is: ");
             scanf("%d", &choice);
             if(choice == 1)
             {
@@ -493,7 +550,7 @@ void insertRecord(struct stData* temp)
         while(!checkDegree(temp->elv, deg1) && !checkDegree(temp->elv, deg2)
              && !checkDegree(temp->elv, deg3) && !checkDegree(temp->elv, deg4))
         {
-            printf("Degree type denied, type 1 to view instruction or type 0 to type again!");
+            printf("Degree type denied, type 1 to view instruction or type 0 to type again!\nYour choice is: ");
             scanf("%d", &choice);
             if(choice == 1)
             {
@@ -512,8 +569,7 @@ void insertRecord(struct stData* temp)
                 fflush(stdin);
                 gets(temp->elv);
             }
-
-        }
+          }
         printf("Start working year: ");
         scanf("%d", &temp->stTime);
         while(YEAR - temp->stTime < 0)
@@ -526,7 +582,7 @@ void insertRecord(struct stData* temp)
         scanf("%d", &temp->sal);
         while(temp->sal < 176)
         {
-            printf("Invalid Salary, type 1 to view instruction or type 0 to type again!");
+            printf("Invalid Salary, type 1 to view instruction or type 0 to type again!\nYour choice is: ");
             scanf("%d", &choice);
             if(choice == 1)
             {
@@ -557,63 +613,72 @@ void insertRecord(struct stData* temp)
         }
         last = temp;
         last->pNext = NULL;
-        printf("\nType 1 to continue inserting other record or type 0 to come back the menu\n");
+        printf("\nType 1 to continue inserting other record or type 0 to come back the menu\nYour choice is: ");
         scanf("%d", &choice);
     }
     while(choice == 1);
-    mainMenu();
+    mainMenu();   
 }
 
 
 void deleteRecord()
 {
-    struct stData *search, *store, *mem;
+    struct stData *prevNode, *curNode, *temp;
     int find, i, findOut = 0, view;
+    if(first == NULL)
+    {
+        printf("\nThe list is empty, you have to have data before delete");
+        printf("\nType any key to get back menu");
+        getch();
+        mainMenu();
+    }
     system("cls");
     printf("It's necessary to know exact the staff's ID, whose you want to remove from the list");
     printf("\nDo you want to have a look to the list once before find him or her?");
     printf("\nType 0 to skip or 1 to view: ");
-    scanf("%d", view);
-    if(view == 1)
+    scanf("%d", &view);
+    showToDel(view);
+    printf("\nEnter the ID whose you want to delete: ");
+    scanf("%d", &find);
+    prevNode = curNode = first;
+    if(curNode->ID == find)
     {
-        system("cls");
-        showAllList();
+        temp = first;
+        first = first->pNext;
+        free(temp);
+        gNumOfStaff--;
+        printf("\nDeleted, type any key to get back menu");
+        getch();
+        mainMenu();
     }
     else
     {
-        printf("\nEnter the necessary ID: ");
-        scanf("%d", &find);
-        search = first;
-        if(search->ID == find)
+        while(curNode->pNext != NULL && curNode->ID != find)
         {
-            store = first;
-            first = first->pNext;
-            free(store);
+            prevNode = curNode;
+            curNode = curNode->pNext;
+        }
+        if(curNode->ID == find)
+        {
+            prevNode->pNext = curNode->pNext;
+            if(curNode->pNext == NULL)
+            {
+                last = prevNode;
+            }
+            free(curNode);
+            gNumOfStaff--;
+            printf("\nDeleted, type any key to get back menu");
+            getch();
+            mainMenu();
         }
         else
         {
-            while(search != NULL)
-            {
-                store = search;
-                if(search->ID == find)
-                {
-                    findOut = 1;
-                    mem = search;
-                    search = search->pNext;
-                    store = search;
-                    free(mem);
-                    break;
-                }
-            }
-        }
-        if(findOut == 0)
-        {
             printf("\nWe can't find any staff who has that ID");
             printf("\nDo you want to try other ID ?");
-            printf("Type any key to get back menu");
-     		getch();
-        }    
-        mainMenu();
+            printf("\nType any key to view menu and try again or do something else");
+            getch();    
+            mainMenu();
+        }
     }
 }
 
@@ -621,30 +686,29 @@ void mainMenu()
 {
     int choice;
     system("cls");
-    printf("\n+------+---------------+-----------+---+---+-----------+---------------+-----+------+");
-    printf("\n+------+---------------+-----------[  MENU ]-----------+---------------+-----+------+");
-    printf("\n+------+---------------+-----------+-------+-----------+---------------+-----+------+");
-    printf("\n|------+---------------+--->>      1. Enter Data      <<---------------+-----+------|");
-    printf("\n|------+---------------+--->>      2. Show Data       <<---------------+-----+------|");
-    printf("\n|------+---------------+--->>      3. Find Staff      <<---------------+-----+------|");
-    printf("\n|------+---------------+--->>      4. Insert Record   <<---------------+-----+------|");
-    printf("\n|------+---------------+--->>      5. Delete Record   <<---------------+-----+------|");
-    printf("\n|------+---------------+--->>      6. Back To Menu    <<---------------+-----+------|");
-    printf("\n|------+---------------+--->>      7. Exit            <<---------------+-----+------|");
-    printf("\n+------+---------------+-------------------------------+---------------+-----+------+");
+    printf("\n+------+---------------+-----------+-----+---+---+----+------------+---------------+-----+------+");
+    printf("\n+------+---------------+-----------******* MENU *******------------+---------------+-----+------+");
+    printf("\n+------+---------------+-------------------------------------------+---------------+-----+------+");
+    printf("\n|------+---------------+--->>      1. Insert Record               <<---------------+-----+------|");
+    printf("\n|------+---------------+--->>      2. Show Data                   <<---------------+-----+------|");
+    printf("\n|------+---------------+--->>      3. Delete Record               <<---------------+-----+------|");
+    printf("\n|------+---------------+--->>      4. Find Staff                  <<---------------+-----+------|");
+    printf("\n|------+---------------+--->>      5. Update Data                 <<---------------+-----+------|");
+    printf("\n|------+---------------+--->>      6. Salary Payment      <<---------------+-----+------|");
+    printf("\n|------+---------------+--->>      7. Exit                        <<---------------+-----+------|");
+    printf("\n+------+---------------+-----------------------------------------------------------+-----+------+");
     do
     {
         printf("\nYour choice is: ");
         scanf("%d", &choice);
         switch(choice)
         {
-            /*
             case 1:
             {
-                dataEntry();
+                system("cls");
+                insertRecord();
                 break;
             }
-            */
             case 2:
             {
                 showAllList();
@@ -653,34 +717,32 @@ void mainMenu()
             case 3:
             {
                 system("cls");
-                findSomeone();
+                deleteRecord();
                 break;
             }
             case 4:
             {
-                system("cls");
-                insertRecord(temp);
-            }       
+                findOptions();
+                break;
+            }
             case 5:
             {
-                system("cls");
-                deleteRecord();
+                dataUpdate();
                 break;
-            }
+            }  
             case 6:
             {
-                system("cls");
-                mainMenu();
+                allPayment();
                 break;
             }
-            /*
             case 7:
             {
-                free();
+                system("cls");
+                printf("Thanks for using");
+                getch();
+                free(first);
                 exit(0);
-                break;
             }
-            */
             default:
             {
                 system("cls");
@@ -697,586 +759,966 @@ void mainMenu()
 
 // Manh
 
-int findSomeone()
+void findOptions()
 {
-    int temp;
-    printf("Find someone by:\n");
-    printf("1: ID\n2: Name\n3: English level\n4: Address");
-    printf("Your choose: \n");
-    scanf("%d", &temp);
-    while(temp < 1 || temp > 4)
+    int choice;
+    system("cls");
+    printf("\n+------+---------------+-----------+-----+---+---+----+------------+---------------+-----+------+");
+    printf("\n+------+---------------+-----------*****  Options *****------------+---------------+-----+------+");
+    printf("\n+------+---------------+-----------+------------------+------------+---------------+-----+------+");
+    printf("\n|------+---------------+--->>      1. Find By ID                  <<---------------+-----+------|");
+    printf("\n|------+---------------+--->>      2. Find By Name                <<---------------+-----+------|");
+    printf("\n|------+---------------+--->>      3. Find By Department          <<---------------+-----+------|");
+    printf("\n|------+---------------+--->>      4. Find By Worktime            <<---------------+-----+------|");
+    printf("\n|------+---------------+--->>      5. Back To Main Menu           <<---------------+-----+------|");
+    printf("\n+------+---------------+-----------------------------------------------------------+-----+------+");
+    do
     {
-        printf("Invalid, input again!\n");
-        scanf("%d", & temp);
+        printf("\nYour choice is: ");
+        scanf("%d", &choice);
+        switch(choice)
+        {
+            case 1:
+            {
+                system("cls");
+                idFind();
+                break;
+            }
+            case 2:
+            {
+                system("cls");
+                nameFind();
+                break;
+            }
+            case 3:
+            {
+                system("cls");
+                dpmtFind();
+                break;
+            }
+            case 4:
+            {
+                system("cls");
+                timeFind();
+                break;
+            }       
+            case 5:
+            {
+                mainMenu();
+                break;
+            }
+            default:
+            {
+                system("cls");
+                printf("\nWrong Selection!");
+                printf("\nType any key to come back Options menu");
+                getch();
+                findOptions();
+                break;
+            }
+        }
+    }
+    while (1);
+}
+
+void idFind()
+{
+    struct stData * check;
+    int idFind, go, count = 0;
+    if(gNumOfStaff == 0)
+    {
+        system("cls");
+        printf("ERROR:<There is no record in the list!\nYou have to have data first>");
+        getch();
+        mainMenu();
+    }
+    system("cls");
+    printf("Enter the ID whose you want to find: ");
+    scanf("%d", &idFind);
+    check = first;
+    while(check != NULL)
+    {
+        if(check->ID == idFind)
+        {
+            count++;
+            system("cls");
+            printf("Staff's Information:");
+            printf("\nID: %d", check->ID);
+            printf("\nName: %s", check->name);
+            printf("\nSex: ");
+            if(check->sex == 1)
+            {
+                printf("Male");
+            }
+            else
+            {
+                printf("Female");
+            }
+            printf("\nDepartment: %s", check->dpment);
+            printf("\nDuty: %s", check->duty);
+            printf("\nDate of birth: %s", check->birth);
+            printf("\nAddress: %s", check->add);
+            printf("\nPhone number: %s", check->phNum);
+            printf("\nStart working time: %d years", check->stTime);
+            printf("\nSalary: %d USD", check->sal);
+            printf("\nEnglish level: %s", check->elv);
+            break;
+        }
+        else
+        {
+            check = check->pNext;
+        }
+    }
+    if(count == 0)
+    {
+        printf("\nSorry, we can't find this staff in the list");
+    }
+    printf("\nType 1 to show Main Menu, 2 to show Finding Options or 3 to exit program");
+    printf("\nYour choice is: ");
+    scanf("%d", &go);
+    if(go == 1)
+    {
+        mainMenu();
+    }
+    else if(go == 2)
+    {
+        findOptions();
+    }
+    else if(go == 3)
+    {
+        system("cls");
+        free(first);
+        printf("Thanks for using");
+        getch();
+        exit(0);
     }
 }
 
-//tìm nhân viên
-int findStaff(STAFF* pStaff , int n)
+void nameFind()
 {
-    int ID, i, temp;
-    int k = findSomeone();
-    char nameCheck[100], dateOfBirth[100], englishLevel[100], address[100];
-    switch (k)
+    struct stData * check;
+    int go, count = 0;
+    char tempName[30];
+    if(gNumOfStaff == 0)
     {
-        case 1 :
+        system("cls");
+        printf("ERROR:<There is no record in the list!\nYou have to have data first>");
+        getch();
+        mainMenu();
+    }
+    system("cls");
+    printf("Enter the name whose you want to find: ");
+    fflush(stdin);
+    gets(tempName);
+    check = first;
+    while(check != NULL)
+    {
+        if(checkToFind(tempName, check->name))
         {
-            printf("Input ID: \n");
-            scanf("%d", &ID);
-            for (i = 0; i < n; ++i)
+            count++;
+            system("cls");
+            printf("Staff's Information:");
+            printf("\nID: ", check->ID);
+            printf("\nName: %s", check->name);
+            printf("\nSex: ");
+            if(check->sex == 1)
             {
-                if (ID == pStaff[i].ID)
-                {
-                    temp = 1;
-                    break;
-                }
-            }
-
-            if (temp == 1)
-            {
-                system("cls");
-                printf("Staff's Information:\n");
-                printf("ID: %d\n", pStaff[i].ID);
-                printf("Name: %s\n", pStaff[i].name);
-                printf("Department: %s\n", pStaff[i].dpment);
-                printf("Sex: %s\n", pStaff[i].sex);
-                printf("Date of birth: %s\n", pStaff[i].birth);
-                printf("Address: %s\n", pStaff[i].add);
-                printf("Phone number: %s\n", pStaff[i].phNum);
-                printf("Work's time: %d years\n", pStaff[i].stTime);
-                printf("Salary: %d USD\n", pStaff[i].sal);
-                printf("English level: %s\n", pStaff[i].elv);
+                printf("Male");
             }
             else
             {
-                printf("ID you just inputed not exist!\n");
+                printf("Female");
             }
+            printf("\nDepartment: %s", check->dpment);
+            printf("\nDuty: %s", check->duty);
+            printf("\nDate of birth: %s", check->birth);
+            printf("\nAddress: %s", check->add);
+            printf("\nPhone number: %s", check->phNum);
+            printf("\nStart working time: %d years", check->stTime);
+            printf("\nSalary: %d USD", check->sal);
+            printf("\nEnglish level: %s", check->elv);
             break;
         }
-        case 2:
+        else
         {
-            printf("Input name: \n");
-            scanf("%s", nameCheck);
-            for (i = 0; i < n; ++i)
-            {
-                system("cls");
-                if (strcmp(nameCheck, pStaff[i].name) == 1)
-                {
-                    temp = 1;
-                    printf("Staff's Information:\n");
-                    printf("ID: %d\n", pStaff[i].ID);
-                    printf("Name: %s\n", pStaff[i].name);
-                    printf("Department: %s\n", pStaff[i].dpment);
-                    printf("Sex: %s\n", pStaff[i].sex);
-                    printf("Date of birth: %s\n", pStaff[i].birth);
-                    printf("Address: %s\n", pStaff[i].add);
-                    printf("Phone number: %s\n", pStaff[i].phNum);
-                    printf("Work's time: %d years\n", pStaff[i].stTime);
-                    printf("Salary: %d USD\n", pStaff[i].sal);
-                    printf("English level: %s\n", pStaff[i].elv);
-                }
-            }
-
-            if (temp != 1)
-            {
-                printf("Name you just inputed not exist!\n");
-            }
-            break;
+            check = check->pNext;
         }
-        case 4:
-        {
-            printf("Input English level: \n");
-            scanf("%s", englishLevel);
-            for (i = 0; i < n; ++i)
-            {
-                system("cls");
-                if (strcmp(englishLevel, pStaff[i].elv) == 1)
-                {
-                    temp = 1;
-                    printf("Staff's Information:\n");
-                    printf("ID: %d\n", pStaff[i].ID);
-                    printf("Name: %s\n", pStaff[i].name);
-                    printf("Department: %s\n", pStaff[i].dpment);
-                    printf("Sex: %s\n", pStaff[i].sex);
-                    printf("Date of birth: %s\n", pStaff[i].birth);
-                    printf("Address: %s\n", pStaff[i].add);
-                    printf("Phone number: %s\n", pStaff[i].phNum);
-                    printf("Work's time: %d years\n", pStaff[i].stTime);
-                    printf("Salary: %d USD\n", pStaff[i].sal);
-                    printf("English level: %s\n", pStaff[i].elv);
-                }
-            }
-
-            if (temp != 1)
-            {
-                printf("Invalid\n");
-            }
-            break;
-        }
-        case 3:
-        {
-            printf("Input Address: \n");
-            scanf("%s", address);
-            for (i = 0; i < n; ++i)
-            {
-                system("cls");
-                if (strcmp(address, pStaff[i].add) == 1)
-                {
-                    temp = 1;
-                    printf("Staff's Information:\n");
-                    printf("ID: %d\n", pStaff[i].ID);
-                    printf("Name: %s\n", pStaff[i].name);
-                    printf("Department: %s\n", pStaff[i].dpment);
-                    printf("Sex: %s\n", pStaff[i].sex);
-                    printf("Date of birth: %s\n", pStaff[i].birth);
-                    printf("Address: %s\n", pStaff[i].add);
-                    printf("Phone number: %s\n", pStaff[i].phNum);
-                    printf("Work's time: %d years\n", pStaff[i].stTime);
-                    printf("Salary: %d USD\n", pStaff[i].sal);
-                    printf("English level: %s\n", pStaff[i].elv);
-                }
-            }
-
-            if (temp != 1)
-            {
-                printf("Invalid\n");
-            }
-            break;
-        }
+    }
+    if(count == 0)
+    {
+        printf("\nSorry, we can't find this staff in the list");
+    }
+    printf("\nType 1 to show Main Menu, 2 to show Finding Options or 3 to exit program");
+    printf("\nYour choice is: ");
+    scanf("%d", &go);
+    if(go == 1)
+    {
+        mainMenu();
+    }
+    else if(go == 2)
+    {
+        findOptions();
+    }
+    else if(go == 3)
+    {
+        system("cls");
+        free(first);
+        printf("Thanks for using");
+        getch();
+        exit(0);
     }
 }
 
-//chỉnh sửa thông tin nhân viên
-int changeInformation(STAFF* pStaff, int n)
+void dpmtFind()
 {
-    //tạo các mảng lưu giá trị tạm thời của các biến cần thay đổi
-    char tDepartment[100], tAdd[100];
-    char tPhNum[100], tELv[100];
-    int tSalary;
-    //nhập ID nhân viên cần thay đổi
-    //khởi tạo giá trị ID để so sánh
-    int tID;
-    //kiểm tra ID vừa nhập vào
-    int i, check = 0, goOn, userChoose;
-    //nếu ID tồn tại giá trị check = 1 bắt đầu thực hiện thau đổi thông tin
-    //nếu ID đó không tồn tại bắt người dùng nhập lại cho đến khi đúng
-    AS:while(check != 1)
+    struct stData * check;
+    int go, count = 0;
+    char tempDep[30];
+    if(gNumOfStaff == 0)
     {
-        printf("ID: \n");
-        scanf("%d", &tID);
-        for(i = 0; i < n; i++)
+        system("cls");
+        printf("ERROR:<There is no record in the list!\nYou have to have data first>");
+        getch();
+        mainMenu();
+    }
+    system("cls");
+    printf("Enter the department which you want to find: ");
+    fflush(stdin);
+    gets(tempDep);
+    check = first;
+    while(check != NULL)
+    {
+        if(checkToFind(tempDep, check->dpment))
         {
-            if (tID == pStaff[i].ID)
+            count++;
+            system("cls");
+            printf("Staff's Information:");
+            printf("\nID: ", check->ID);
+            printf("\nName: %s", check->name);
+            printf("\nSex: ");
+            if(check->sex == 1)
             {
-                check = 1;
-                break;
+                printf("Male");
             }
+            else
+            {
+                printf("Female");
+            }
+            printf("\nDepartment: %s", check->dpment);
+            printf("\nDuty: %s", check->duty);
+            printf("\nDate of birth: %s", check->birth);
+            printf("\nAddress: %s", check->add);
+            printf("\nPhone number: %s", check->phNum);
+            printf("\nStart working time: %d years", check->stTime);
+            printf("\nSalary: %d USD", check->sal);
+            printf("\nEnglish level: %s", check->elv);
+            break;
+        }
+        else
+        {
+            check = check->pNext;
         }
     }
-    //bắt đầu việc thực hiên thay đổi thông tin
-    TS:printf("You want to change: \n");
-    printf("1: Department\n");
-    printf("2: Address\n");
-    printf("3: Phone number\n");
-    printf("4: English level\n");
-    printf("5: Salary\n");
-    printf("6: Add staff\n");
-    printf("7: Delete staff\n");
-    printf("You chose:\n");
+    if(count == 0)
+    {
+        printf("\nSorry, we can't find this staff in the list");
+    }
+    printf("\nType 1 to show Main Menu, 2 to show Finding Options or 3 to exit program");
+    printf("\nYour choice is: ");
+    scanf("%d", &go);
+    if(go == 1)
+    {
+        mainMenu();
+    }
+    else if(go == 2)
+    {
+        findOptions();
+    }
+    else if(go == 3)
+    {
+        system("cls");
+        free(first);
+        printf("Thanks for using");
+        getch();
+        exit(0);
+    }
+}
 
-    scanf("%d", &userChoose);
-    while(userChoose < 1 || userChoose > 7)
+void timeFind()
+{
+    struct stData * check;
+    int go, time, count = 0;
+    if(gNumOfStaff == 0)
     {
-        printf("Wrong funcion! input again!!\n");
-        scanf("%d", &userChoose);
+        system("cls");
+        printf("ERROR:<There is no record in the list!\nYou have to have data first>");
+        getch();
+        mainMenu();
     }
-    switch (userChoose)
+    system("cls");
+    printf("We divide whole staffs into 3 Group:");
+    printf("\nGroup 1: less than 3 years experience");
+    printf("\nGroup 2: 3 - 5 years experience");
+    printf("\nGroup 3: more than 5 years experience");
+    printf("\nEnter the Group you want to find: Group ");
+    scanf("%d", &time);
+    if(time < 1 || time > 3)
     {
-        case 1:
+        do
         {
-            printf("Enter new department: \n");
-            fflush(stdin);
-            gets(tDepartment);
-            strcpy(pStaff[i].dpment, tDepartment);
-            printf("Change successfully!!!\n");
-            printf("Do you want to go on change: \n");
-            printf("1: Continue this staff\n");
-            printf("2: Another staff\n");
-            printf("3: No, finish change\n");
-            scanf("%d", &goOn);
-            if (goOn == 1)
-            {
-                goto TS;
-            }
-            else if (goOn == 2)
-            {
-                goto AS;
-            }
-            else
-            {
-                break;
-            }
+            printf("\nInvalid Group. You have to type 1, 2 or 3");
+            printf("\nGroup: ");
+            scanf("%d", &time);
         }
-        case 2:
+        while(1 <= time && time <= 3);
+    }
+    check = first;
+    if(time == 1)
+    {
+        system("cls");    
+        while(check != NULL)
         {
-            printf("Enter new address: \n");
-            fflush(stdin);
-            gets(tAdd);
-            strcpy(pStaff[i].add, tAdd);
-            printf("Change successfully!!!\n");
-            printf("Do you want to go on change: \n");
-            printf("1: Continue this staff\n");
-            printf("2: Another staff\n");
-            printf("3: No, finish change\n");
-            scanf("%d", &goOn);
-            if (goOn == 1)
+            if((YEAR - check->stTime) < 3)
             {
-                goto TS;
-            }
-            else if (goOn == 2)
-            {
-                goto AS;
-            }
-            else
-            {
-                break;
-            }
-        }
-        case 3:
-        {
-            printf("Enter new phone number: \n");
-            fflush(stdin);
-            gets(tPhNum);
-            strcpy(pStaff[i].phNum, tPhNum);
-            printf("Change successfully!!!\n");
-            printf("Do you want to go on change: \n");
-            printf("1: Continue this staff\n");
-            printf("2: Another staff\n");
-            printf("3: No, finish change\n");
-            scanf("%d", &goOn);
-            if (goOn == 1)
-            {
-                goto TS;
-            }
-            else if (goOn == 2)
-            {
-                goto AS;
-            }
-            else
-            {
-                break;
-            }
-        }
-        case 4:
-        {
-            printf("Enter new english level: \n");
-            fflush(stdin);
-            gets(tELv);
-            strcpy(pStaff[i].elv, tELv);
-            printf("Change successfully!!!\n");
-            printf("Do you want to go on change: \n");
-            printf("1: Continue this staff\n");
-            printf("2: Another staff\n");
-            printf("3: No, finish change\n");
-            scanf("%d", &goOn);
-            if (goOn == 1)
-            {
-                goto TS;
-            }
-            else if (goOn == 2)
-            {
-                goto AS;
-            }
-            else
-            {
-                break;
-            }
-        }
-        case 5:
-        {
-            printf("Enter new Salary: \n");
-            scanf("%d", &pStaff[i].sal);
-            printf("Change successfully!!!\n");
-            printf("Do you want to go on change: \n");
-            printf("1: Continue this staff\n");
-            printf("2: Another staff\n");
-            printf("3: No, finish change\n");
-            scanf("%d", &goOn);
-            if (goOn == 1)
-            {
-                goto TS;
-            }
-            else if (goOn == 2)
-            {
-                goto AS;
-            }
-            else
-            {
-                break;
-            }
-        }
-        case 6:
-        {
-            n++;
-            printf("ID: \n");
-            scanf("%d", &pStaff[n-1].ID);
-            printf("Name: \n");
-            fflush(stdin);
-            gets(pStaff[n-1].name);
-            printf("Department: \n");
-            gets(pStaff[n-1].dpment);
-            printf("Sex: \n");
-            gets(pStaff[n-1].duty);
-            printf("Birth: \n");
-            gets(pStaff[n-1].birth);
-            printf("Address: \n");
-            gets(pStaff[n-1].add);
-            printf("Phone number: \n");
-            gets(pStaff[n-1].phNum);
-            printf("English level: \n");
-            gets(pStaff[n-1].elv);
-            printf("Start time: \n");
-            scanf("%s", &pStaff[n-1].stTime);
-            printf("Salary: \n");
-            scanf("%d", &pStaff[n-1].sal);
-            printf("Add staff successfully\n");
-            printf("Do you want to go on change: \n");
-            printf("1: Continue this staff\n");
-            printf("2: Another staff\n");
-            printf("3: No, finish change\n");
-            scanf("%d", &goOn);
-            if (goOn == 1)
-            {
-                goto TS;
-            }
-            else if (goOn == 2)
-            {
-                goto AS;
-            }
-            else
-            {
-                break;
-            }
-        }
-        case 7:
-        {
-            //delete staff
-            //input id 
-            printf("Input ID want to delete: \n");
-            scanf("%d", &tID);
-            //check this ID
-            check = 0;
-            while(check != 1)
-            {
-                printf("ID: \n");
-                scanf("%d", &tID);
-                for(i = 0; i < n; i++)
+                count++;
+                printf("\nStaff[%d]'s information:", count);
+                printf("\nID: ", check->ID);
+                printf("\nName: %s", check->name);
+                printf("\nSex: ");
+                if(check->sex == 1)
                 {
-                    if (tID == pStaff[i].ID)
+                    printf("Male");
+                }
+                else
+                {
+                    printf("Female");
+                }
+                printf("\nDepartment: %s", check->dpment);
+                printf("\nDuty: %s", check->duty);
+                printf("\nDate of birth: %s", check->birth);
+                printf("\nAddress: %s", check->add);
+                printf("\nPhone number: %s", check->phNum);
+                printf("\nStart working time: %d years", check->stTime);
+                printf("\nSalary: %d USD", check->sal);
+                printf("\nEnglish level: %s", check->elv);
+                break;
+            }
+            else
+            {
+                check = check->pNext;
+            }  
+        }
+        if(count == 0)
+        {
+            printf("\nThere is no suitable record to this Group");
+        }   
+    }
+    else if(time == 2)
+    {
+        system("cls");    
+        while(check != NULL)
+        {
+            if((YEAR - check->stTime) <= 5 && (YEAR - check->stTime) >= 3)
+            {
+                count++;
+                printf("\nStaff[%d]'s information:", count);
+                printf("\nID: ", check->ID);
+                printf("\nName: %s", check->name);
+                printf("\nSex: ");
+                if(check->sex == 1)
+                {
+                    printf("Male");
+                }
+                else
+                {
+                    printf("Female");
+                }
+                printf("\nDepartment: %s", check->dpment);
+                printf("\nDuty: %s", check->duty);
+                printf("\nDate of birth: %s", check->birth);
+                printf("\nAddress: %s", check->add);
+                printf("\nPhone number: %s", check->phNum);
+                printf("\nStart working time: %d years", check->stTime);
+                printf("\nSalary: %d USD", check->sal);
+                printf("\nEnglish level: %s", check->elv);
+                break;
+            }
+            else
+            {
+                check = check->pNext;
+            }  
+        }
+        if(count == 0)
+        {
+            printf("\nThere is no suitable record to this Group");
+        }   
+    }
+    else
+    {
+        system("cls");    
+        while(check != NULL)
+        {
+            if((YEAR - check->stTime) > 5)
+            {
+                count++;
+                printf("\nStaff[%d]'s information:", count);
+                printf("\nID: ", check->ID);
+                printf("\nName: %s", check->name);
+                printf("\nSex: ");
+                if(check->sex == 1)
+                {
+                    printf("Male");
+                }
+                else
+                {
+                    printf("Female");
+                }
+                printf("\nDepartment: %s", check->dpment);
+                printf("\nDuty: %s", check->duty);
+                printf("\nDate of birth: %s", check->birth);
+                printf("\nAddress: %s", check->add);
+                printf("\nPhone number: %s", check->phNum);
+                printf("\nStart working time: %d years", check->stTime);
+                printf("\nSalary: %d USD", check->sal);
+                printf("\nEnglish level: %s", check->elv);
+                break;
+            }
+            else
+            {
+                check = check->pNext;
+            }  
+        }
+        if(count == 0)
+        {
+            printf("\nThere is no suitable record to this Group");
+        }   
+    }
+    printf("\nType 1 to show Main Menu, 2 to show Finding Options or 3 to exit program");
+    printf("\nYour choice is: ");
+    scanf("%d", &go);
+    if(go == 1)
+    {
+        mainMenu();
+    }
+    else if(go == 2)
+    {
+        findOptions();
+    }
+    else if(go == 3)
+    {
+        system("cls");
+        free(first);
+        printf("Thanks for using");
+        getch();
+        exit(0);
+    }
+}
+
+
+void dataUpdate()
+{
+    int choice;
+    system("cls");
+    printf("\n+------+---------------+-----------+-----+---+---+----+------------+---------------+-----+------+");
+    printf("\n+------+---------------+-----------*****   Update *****------------+---------------+-----+------+");
+    printf("\n+------+---------------+-----------+------------------+------------+---------------+-----+------+");
+    printf("\n|------+---------------+--->>      1. Update Department           <<---------------+-----+------|");
+    printf("\n|------+---------------+--->>      2. Update Duty                 <<---------------+-----+------|");
+    printf("\n|------+---------------+--->>      3. Update Address              <<---------------+-----+------|");
+    printf("\n|------+---------------+--->>      4. Update Salary               <<---------------+-----+------|");
+    printf("\n|------+---------------+--->>      5. Back To Main Menu           <<---------------+-----+------|");
+    printf("\n+------+---------------+-----------------------------------------------------------+-----+------+");
+    do
+    {
+        printf("\nYour choice is: ");
+        scanf("%d", &choice);
+        switch(choice)
+        {
+            case 1:
+            {
+                system("cls");
+                depUpdate();
+                break;
+            }
+            case 2:
+            {
+                system("cls");
+                dutyUpdate();
+                break;
+            }
+            case 3:
+            {
+                system("cls");
+                addUpdate();
+                break;
+            }
+            case 4:
+            {
+                system("cls");
+                salUpdate();
+                break;
+            }     
+            case 5:
+            {
+                mainMenu();
+                break;
+            }
+            default:
+            {
+                system("cls");
+                printf("\nWrong Selection!");
+                printf("\nType any key to come back Update menu");
+                getch();
+                dataUpdate();
+                break;
+            }
+        }
+    }
+    while (1);
+}
+
+void depUpdate()
+{
+    struct stData *change;
+    int supID, choice;
+    change = first;
+    if(gNumOfStaff == 0)
+    {
+        system("cls");
+        printf("ERROR:<There is no record in the list!\nYou have to have data first>");
+        getch();
+        mainMenu();
+    }
+    system("cls");
+    printf("Staff ID is used to support update process");
+    printf("\nType the ID whose you want to update his or her data: ");
+    scanf("%d", &supID);
+    while(change != NULL)
+    {
+        if(change->ID == supID)
+        {
+            if(change->sex)
+            {
+                printf("\nHis new department is: ");
+                fflush(stdin);
+                gets(change->dpment);
+                while(!checkChr(change->dpment))
+                {
+                    printf("Invalid Department, type 1 to view instruction or type 0 to type again!\nYour choice is: ");
+                    scanf("%d", &choice);
+                    if(choice == 1)
                     {
-                        check = 1;
-                        break;
+                        system("cls");
+                        instruction();
+                        printf("Type any key to continue typing\n");
+                        getch();
+                        system("cls");
+                        printf("His new department is: ");
+                        fflush(stdin);
+                        gets(change->dpment);
+                    }
+                    else if(choice == 0)
+                    {
+                        printf("His new department is: ");
+                        fflush(stdin);
+                        gets(change->dpment);
                     }
                 }
             }
-            //create some variables to swap
-            char swapName[100], swapDepartment[100];
-            char swapBirth[100], swapAdd[100];
-            char swapPhNum[100], swapELv[100];
-            int swapTime, swapSalary, swapSex;
-            for (i; i < n; ++i)
+            else
             {
-                //name
-                strcpy(swapName, pStaff[i].name);
-                strcpy(pStaff[i].name, pStaff[i + 1].name);
-                strcpy(pStaff[i + 1].name, swapName);
-                //department
-                strcpy(swapDepartment, pStaff[i].dpment);
-                strcpy(pStaff[i].dpment, pStaff[i + 1].dpment);
-                strcpy(pStaff[i + 1].dpment, swapDepartment);
-                //sex
-                swapSex = pStaff[i].sex;
-                pStaff[i].sex = pStaff[i + 1].sex;
-                pStaff[i + 1].sex = swapSex;
-                //birth
-                strcpy(swapBirth, pStaff[i].birth);
-                strcpy(pStaff[i].birth, pStaff[i + 1].birth);
-                strcpy(pStaff[i + 1].birth, swapBirth);
-                //add   
-                strcpy(swapAdd, pStaff[i].add);
-                strcpy(pStaff[i].add, pStaff[i + 1].add);
-                strcpy(pStaff[i + 1].add, swapAdd);  
-                //phone
-                strcpy(swapPhNum, pStaff[i].phNum);
-                strcpy(pStaff[i].phNum, pStaff[i + 1].phNum);
-                strcpy(pStaff[i + 1].phNum, swapPhNum);  
-                //elv
-                strcpy(swapELv, pStaff[i].elv);
-                strcpy(pStaff[i].elv, pStaff[i + 1].elv);
-                strcpy(pStaff[i + 1].elv, swapELv);
-                //time
-                swapTime = pStaff[i].stTime;
-                pStaff[i].stTime = pStaff[i + 1].stTime;
-                pStaff[i + 1].stTime = swapTime;
-                //salary
-                swapSalary = pStaff[i].sal;
-                pStaff[i].sal = pStaff[i + 1].sal;
-                pStaff[i + 1].sal = swapSalary;
+                printf("\nHer new department is: ");
+                fflush(stdin);
+                gets(change->dpment);
+                while(!checkChr(change->dpment))
+                {
+                    printf("Invalid Department, type 1 to view instruction or type 0 to type again!\nYour choice is: ");
+                    scanf("%d", &choice);
+                    if(choice == 1)
+                    {
+                        system("cls");
+                        instruction();
+                        printf("Type any key to continue typing\n");
+                        getch();
+                        system("cls");
+                        printf("Her new department is: ");
+                        fflush(stdin);
+                        gets(change->dpment);
+                    }
+                    else if(choice == 0)
+                    {
+                        printf("Her new department is: ");
+                        fflush(stdin);
+                        gets(change->dpment);
+                    }
+                }
             }
-            n--;
-            printf("Deleted!!!\n");
-            printf("Do you want to go on change: \n");
-            printf("1: Continue this staff\n");
-            printf("2: Another staff\n");
-            printf("3: No, finish change\n");
-            scanf("%d", &goOn);
-            if (goOn == 1)
+            break;
+        }
+        else
+        {
+            change = change->pNext;
+        }
+    }
+    if(change == NULL)
+    {
+        printf("\nThere is no suitable record in the list!");
+    }
+    printf("\n\nType 1 to get back update menu, 2 to main menu, 3 to exit program: ");
+    scanf("%d", &choice);
+    if(choice == 1)
+    {
+        dataUpdate();
+    }
+    else if(choice == 2)
+    {
+        mainMenu();
+    }
+    else if(choice == 3)
+    {
+        system("cls");
+        free(first);
+        printf("Thanks for using");
+        exit(0);
+    }
+}
+
+void dutyUpdate()
+{
+    struct stData *change;
+    int supID, choice;
+    change = first;
+    if(gNumOfStaff == 0)
+    {
+        system("cls");
+        printf("ERROR:<There is no record in the list!\nYou have to have data first>");
+        getch();
+        mainMenu();
+    }
+    system("cls");
+    printf("Staff ID is used to support update process");
+    printf("\nType the ID whose you want to update his or her data: ");
+    scanf("%d", &supID);
+    while(change != NULL)
+    {
+        if(change->ID == supID)
+        {
+            if(change->sex)
             {
-                goto TS;
-            }
-            else if (goOn == 2)
-            {
-                goto AS;
+                printf("\nHis new duty is: ");
+                fflush(stdin);
+                gets(change->duty);
+                while(!checkChr(change->duty))
+                {
+                    printf("Invalid Duty, type 1 to view instruction or type 0 to type again!\nYour choice is: ");
+                    scanf("%d", &choice);
+                    if(choice == 1)
+                    {
+                        system("cls");
+                        instruction();
+                        printf("Type any key to continue typing\n");
+                        getch();
+                        system("cls");
+                        printf("His new duty is: ");
+                        fflush(stdin);
+                        gets(change->duty);
+                    }
+                    else if(choice == 0)
+                    {
+                        printf("His new duty is: ");
+                        fflush(stdin);
+                        gets(change->duty);
+                    }
+                }
             }
             else
             {
-                break;
+                printf("\nHer new Duty is: ");
+                fflush(stdin);
+                gets(change->duty);
+                while(!checkChr(change->duty))
+                {
+                    printf("Invalid Duty, type 1 to view instruction or type 0 to type again!\nYour choice is: ");
+                    scanf("%d", &choice);
+                    if(choice == 1)
+                    {
+                        system("cls");
+                        instruction();
+                        printf("Type any key to continue typing\n");
+                        getch();
+                        system("cls");
+                        printf("Her new Duty is: ");
+                        fflush(stdin);
+                        gets(change->duty);
+                    }
+                    else if(choice == 0)
+                    {
+                        printf("Her new Duty is: ");
+                        fflush(stdin);
+                        gets(change->duty);
+                    }
+                }
             }
+            break;
         }
-    }
-}
-
-
-//truy xuat theo tham nien  struct stData staff[], int n
-int workTime(struct stData staff[], int n)
-{
-    int k, time[100], i;
-    printf("\nEnter work time: ");
-    scanf("%d", &k);
-    for (i = 0; i < gNumOfStaff; ++i)
-    {
-        time[i] = 2018 - staff[i].stTime;
-    }
-    printf("\nPerson who has worked for our company for %d years is:");
-    for (i = 0; i < gNumOfStaff; ++i)
-    {
-        if (time[i] == k)
+        else
         {
-            printf("\n%s", staff[i].name);
+            change = change->pNext;
         }
     }
+    if(change == NULL)
+    {
+        printf("\nThere is no suitable record in the list!");
+    }
+    printf("\n\nType 1 to get back update menu, 2 to main menu, 3 to exit program: ");
+    scanf("%d", &choice);
+    if(choice == 1)
+    {
+        dataUpdate();
+    }
+    else if(choice == 2)
+    {
+        mainMenu();
+    }
+    else if(choice == 3)
+    {
+        system("cls");
+        free(first);
+        printf("Thanks for using");
+        exit(0);
+    }
 }
 
-//tong ket luong chi tra
-
-int paySalary(struct stData staff[], int n)
+void addUpdate()
 {
-    int i, sumOfSalary;
-    for (i = 0; i < n; ++i)
+    struct stData *change;
+    int supID, choice;
+    change = first;
+    if(gNumOfStaff == 0)
     {
-        sumOfSalary += staff[i].sal;
+        system("cls");
+        printf("ERROR:<There is no record in the list!\nYou have to have data first>");
+        getch();
+        mainMenu();
     }
-    printf("This month we need to pay %d USD for worker's salary!", sumOfSalary);
-}
-
-//du bao suy giam nhan luc
-// NEED TO EDIT
-/*
-int reduceWorker(struct stData staff[], int n)
-{
-    int i, reduce, ageOfWorker[1000];
-    for (i = 0; i < n; ++i)
+    system("cls");
+    printf("Staff ID is used to support update process");
+    printf("\nType the ID whose you want to update his or her data: ");
+    scanf("%d", &supID);
+    while(change != NULL)
     {
-        ageOfWorker[i] = 2018 - staff[i].birth;
-    }
-    for (i = 0; i < n; ++i)
-    {
-        if (ageOfWorker[i] > 59)
+        if(change->ID == supID)
         {
-            reduce++;
+            if(change->sex)
+            {
+                printf("\nHis new address is: ");
+                fflush(stdin);
+                gets(change->add);
+                while(strlen(change->add) > 100)
+                {
+                    printf("Invalid Address, type 1 to view instruction or type 0 to type again!\nYour choice is: ");
+                    scanf("%d", &choice);
+                    if(choice == 1)
+                    {
+                        system("cls");
+                        instruction();
+                        printf("Type any key to continue typing\n");
+                        getch();
+                        system("cls");
+                        printf("His new address is: ");
+                        fflush(stdin);
+                        gets(change->add);
+                    }
+                    else if(choice == 0)
+                    {
+                        printf("His new address is: ");
+                        fflush(stdin);
+                        gets(change->add);
+                    }
+                }
+            }
+            else
+            {
+                printf("\nHer new Address is: ");
+                fflush(stdin);
+                gets(change->add);
+                while(strlen(change->add) > 100)
+                {
+                    printf("Invalid Address, type 1 to view instruction or type 0 to type again!\nYour choice is: ");
+                    scanf("%d", &choice);
+                    if(choice == 1)
+                    {
+                        system("cls");
+                        instruction();
+                        printf("Type any key to continue typing\n");
+                        getch();
+                        system("cls");
+                        printf("Her new Address is: ");
+                        fflush(stdin);
+                        gets(change->add);
+                    }
+                    else if(choice == 0)
+                    {
+                        printf("Her new Address is: ");
+                        fflush(stdin);
+                        gets(change->add);
+                    }
+                }
+            }
+            break;
+        }
+        else
+        {
+            change = change->pNext;
         }
     }
-    printf("\nWe count that %d staffs will retire!!!");
+    if(change == NULL)
+    {
+        printf("\nThere is no suitable record in the list!");
+    }
+    printf("\n\nType 1 to get back update menu, 2 to main menu, 3 to exit program: ");
+    scanf("%d", &choice);
+    if(choice == 1)
+    {
+        dataUpdate();
+    }
+    else if(choice == 2)
+    {
+        mainMenu();
+    }
+    else if(choice == 3)
+    {
+        system("cls");
+        free(first);
+        printf("Thanks for using");
+        exit(0);
+    }
 }
-*/
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+void salUpdate()
+{
+    struct stData *change;
+    int supID, choice;
+    change = first;
+    if(gNumOfStaff == 0)
+    {
+        system("cls");
+        printf("ERROR:<There is no record in the list!\nYou have to have data first>");
+        getch();
+        mainMenu();
+    }
+    system("cls");
+    printf("Staff ID is used to support update process");
+    printf("\nType the ID whose you want to update his or her data: ");
+    scanf("%d", &supID);
+    while(change != NULL)
+    {
+        if(change->ID == supID)
+        {
+            if(change->sex)
+            {
+                printf("\nHis new salary is: ");
+                scanf("%d", &change->sal);
+                while(change->sal < 176)
+                {
+                    printf("Invalid sal, type 1 to view instruction or type 0 to type again!\nYour choice is: ");
+                    scanf("%d", &choice);
+                    if(choice == 1)
+                    {
+                        system("cls");
+                        instruction();
+                        printf("Type any key to continue typing\n");
+                        getch();
+                        system("cls");
+                        printf("His new salary is: ");
+                        scanf("%d", &change->sal);
+                    }
+                    else if(choice == 0)
+                    {
+                        printf("His new salary is: ");
+                        scanf("%d", &change->sal);
+                    }
+                }
+            }
+            else
+            {
+                printf("\nHer new salary is: ");
+                scanf("%d", &change->sal);
+                while(change->sal < 176)
+                {
+                    printf("Invalid salary, type 1 to view instruction or type 0 to type again!\nYour choice is: ");
+                    scanf("%d", &choice);
+                    if(choice == 1)
+                    {
+                        system("cls");
+                        instruction();
+                        printf("Type any key to continue typing\n");
+                        getch();
+                        system("cls");
+                        printf("Her new salary is: ");
+                        scanf("%d", &change->sal);
+                    }
+                    else if(choice == 0)
+                    {
+                        printf("Her new salary is: ");
+                        scanf("%d", &change->sal);
+                    }
+                }
+            }
+            break;
+        }
+        else
+        {
+            change = change->pNext;
+        }
+    }
+    if(change == NULL)
+    {
+        printf("\nThere is no suitable record in the list!");
+    }
+    printf("\n\nType 1 to get back update menu, 2 to main menu, 3 to exit program: ");
+    scanf("%d", &choice);
+    if(choice == 1)
+    {
+        dataUpdate();
+    }
+    else if(choice == 2)
+    {
+        mainMenu();
+    }
+    else if(choice == 3)
+    {
+        system("cls");
+        free(first);
+        printf("Thanks for using");
+        exit(0);
+    }
+}
+
+void allPayment()
+{
+   struct stData *pay;
+   long all = 0;
+   pay = first;
+   while(pay != NULL)
+   {
+        all += pay->sal;
+        pay = pay->pNext;
+   }
+   system("cls");
+   printf("Amount of salary your company need to pay per month is: %ld USD", all);
+   printf("\nType any key to get back main menu");
+   getch();
+   mainMenu();
+}
+
+int getYear(char *str)
+{
+    int year = 0;
+    year += (*(str + 6) - 48) * 1000;
+    year += (*(str + 7) - 48) * 100;
+    year += (*(str + 8) - 48) * 10;
+    year += (*(str + 9) - 48);
+    return year;
+}
